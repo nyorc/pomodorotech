@@ -2,17 +2,10 @@ import { test, expect } from '@playwright/test';
 
 test.describe('PomodoroTech', () => {
   test.describe('Initial State', () => {
-    test('should display 25:00 as initial time', async ({ page }) => {
+    test('should display initial timer and counter labels', async ({ page }) => {
       await page.goto('/');
 
-      const timerDisplay = page.getByTestId('timer-display');
-
-      await expect(timerDisplay).toHaveText('25:00');
-    });
-
-    test('should display counter labels', async ({ page }) => {
-      await page.goto('/');
-
+      await expect(page.getByTestId('timer-display')).toHaveText('25:00');
       await expect(page.getByTestId('completed-label')).toHaveText('Completed');
       await expect(page.getByTestId('cancelled-label')).toHaveText('Cancelled');
     });
@@ -39,7 +32,7 @@ test.describe('PomodoroTech', () => {
   });
 
   test.describe('Cancel Button Click', () => {
-    test('should stop countdown and reset time to 25:00', async ({ page }) => {
+    test('should reset timer, increment cancelled count, and toggle buttons', async ({ page }) => {
       await page.goto('/');
       await page.getByTestId('start-button').click();
       await page.waitForTimeout(1000);
@@ -47,27 +40,12 @@ test.describe('PomodoroTech', () => {
       await page.getByTestId('cancel-button').click();
 
       await expect(page.getByTestId('timer-display')).toHaveText('25:00');
-      await page.waitForTimeout(1000);
-      await expect(page.getByTestId('timer-display')).toHaveText('25:00');
-    });
-
-    test('should increment cancelled count', async ({ page }) => {
-      await page.goto('/');
-      await page.getByTestId('start-button').click();
-
-      await page.getByTestId('cancel-button').click();
-
       await expect(page.getByTestId('cancelled-count')).toHaveText('1');
-    });
-
-    test('should show start button and hide cancel button', async ({ page }) => {
-      await page.goto('/');
-      await page.getByTestId('start-button').click();
-
-      await page.getByTestId('cancel-button').click();
-
       await expect(page.getByTestId('start-button')).toBeVisible();
       await expect(page.getByTestId('cancel-button')).toBeHidden();
+      // 確認計時器已停止
+      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('timer-display')).toHaveText('25:00');
     });
   });
 
@@ -76,7 +54,7 @@ test.describe('PomodoroTech', () => {
       await page.goto('/?testMode=true');
 
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       await expect(page.getByTestId('completed-count')).toHaveText('1');
     });
@@ -85,10 +63,10 @@ test.describe('PomodoroTech', () => {
       await page.goto('/?testMode=true');
 
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       await expect(page.getByTestId('phase-display')).toHaveText('Short Break');
-      await expect(page.getByTestId('timer-display')).toHaveText('0:02');
+      await expect(page.getByTestId('timer-display')).toHaveText('0:01');
       await expect(page.getByTestId('start-button')).toBeVisible();
     });
 
@@ -96,13 +74,13 @@ test.describe('PomodoroTech', () => {
       await page.goto('/?testMode=true');
 
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       await expect(page.getByTestId('phase-display')).toHaveText('Work');
-      await expect(page.getByTestId('timer-display')).toHaveText('0:02');
+      await expect(page.getByTestId('timer-display')).toHaveText('0:01');
       await expect(page.getByTestId('start-button')).toBeVisible();
     });
 
@@ -111,11 +89,11 @@ test.describe('PomodoroTech', () => {
 
       for (let i = 0; i < 4; i++) {
         await page.getByTestId('start-button').click();
-        await page.waitForTimeout(3000);
+        await page.waitForTimeout(1500);
 
         if (i < 3) {
           await page.getByTestId('start-button').click();
-          await page.waitForTimeout(3000);
+          await page.waitForTimeout(1500);
         }
       }
 
@@ -142,7 +120,7 @@ test.describe('PomodoroTech', () => {
 
       await page.goto('/?testMode=true');
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       const calls = await page.evaluate(() => (window as any).notificationCalls);
       expect(calls.length).toBeGreaterThan(0);
@@ -174,7 +152,7 @@ test.describe('PomodoroTech', () => {
 
       await page.goto('/?testMode=true');
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       const calls = await page.evaluate(() => (window as any).oscillatorStartCalls);
       expect(calls).toBeGreaterThan(0);
@@ -185,7 +163,7 @@ test.describe('PomodoroTech', () => {
     test('should persist counts after page reload', async ({ page }) => {
       await page.goto('/?testMode=true');
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       await expect(page.getByTestId('completed-count')).toHaveText('1');
 
@@ -210,9 +188,9 @@ test.describe('PomodoroTech', () => {
 
       // 完成工作 -> 進入短休息 -> 完成短休息
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       await expect(page.getByTestId('breaks-count')).toHaveText('1');
     });
@@ -230,7 +208,7 @@ test.describe('PomodoroTech', () => {
       await page.goto('/?testMode=true');
 
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       const today = new Date().toISOString().split('T')[0];
       const stats = await page.evaluate((date) => {
@@ -257,6 +235,32 @@ test.describe('PomodoroTech', () => {
 
       expect(stats).not.toBeNull();
       expect(stats.cancelled).toBe(1);
+    });
+
+    // 頁面載入時應從 records 陣列計算統計值，確保資料一致性
+    test('should calculate stats from records array on page load', async ({ page }) => {
+      const today = new Date().toISOString().split('T')[0];
+
+      await page.goto('/');
+      await page.evaluate((date) => {
+        // 只設定 records，不設定數字欄位，驗證系統會從 records 計算
+        localStorage.setItem(`stats-${date}`, JSON.stringify({
+          records: [
+            { type: 'work', timestamp: '2026-01-17T10:00:00.000Z' },
+            { type: 'work', timestamp: '2026-01-17T11:00:00.000Z' },
+            { type: 'shortBreak', timestamp: '2026-01-17T10:30:00.000Z' },
+            { type: 'longBreak', timestamp: '2026-01-17T12:00:00.000Z' },
+            { type: 'cancelled', timestamp: '2026-01-17T14:00:00.000Z' }
+          ]
+        }));
+      }, today);
+
+      await page.reload();
+
+      // 從 records 計算：work=2, breaks=2 (shortBreak+longBreak), cancelled=1
+      await expect(page.getByTestId('completed-count')).toHaveText('2');
+      await expect(page.getByTestId('breaks-count')).toHaveText('2');
+      await expect(page.getByTestId('cancelled-count')).toHaveText('1');
     });
 
     // 頁面載入時應從當天記錄讀取統計，而非全域累計值
@@ -322,7 +326,7 @@ test.describe('PomodoroTech', () => {
       await page.goto('/?testMode=true');
 
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       const today = new Date().toISOString().split('T')[0];
       const stats = await page.evaluate((date) => {
@@ -342,9 +346,9 @@ test.describe('PomodoroTech', () => {
 
       // 完成工作 -> 進入短休息 -> 完成短休息
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
       await page.getByTestId('start-button').click();
-      await page.waitForTimeout(3000);
+      await page.waitForTimeout(1500);
 
       const today = new Date().toISOString().split('T')[0];
       const stats = await page.evaluate((date) => {

@@ -7,9 +7,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
   }
-  const POMODORO_DURATION = isTestMode ? 2 : 25 * 60;
-  const SHORT_BREAK_DURATION = isTestMode ? 2 : 5 * 60;
-  const LONG_BREAK_DURATION = isTestMode ? 2 : 15 * 60;
+  const POMODORO_DURATION = isTestMode ? 1 : 25 * 60;
+  const SHORT_BREAK_DURATION = isTestMode ? 1 : 5 * 60;
+  const LONG_BREAK_DURATION = isTestMode ? 1 : 15 * 60;
   // Pomodoro Technique 標準規則：每 4 個工作週期後進入長休息
   const POMODOROS_UNTIL_LONG_BREAK = 4;
 
@@ -41,11 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
     nextDayButton.disabled = viewingDate >= today;
   }
 
+  function calculateStatsFromRecords(records) {
+    return {
+      completed: records.filter(r => r.type === 'work').length,
+      breaks: records.filter(r => r.type === 'shortBreak' || r.type === 'longBreak').length,
+      cancelled: records.filter(r => r.type === 'cancelled').length
+    };
+  }
+
   function loadStatsForDate(dateStr) {
-    const stats = JSON.parse(localStorage.getItem(`stats-${dateStr}`)) || { completed: 0, breaks: 0, cancelled: 0 };
-    completedCount = stats.completed;
-    breaksCount = stats.breaks || 0;
-    cancelledCount = stats.cancelled;
+    const stats = JSON.parse(localStorage.getItem(`stats-${dateStr}`)) || { completed: 0, breaks: 0, cancelled: 0, records: [] };
+    // 優先從 records 陣列計算統計值，確保資料一致性
+    if (stats.records && stats.records.length > 0) {
+      const calculated = calculateStatsFromRecords(stats.records);
+      completedCount = calculated.completed;
+      breaksCount = calculated.breaks;
+      cancelledCount = calculated.cancelled;
+    } else {
+      completedCount = stats.completed || 0;
+      breaksCount = stats.breaks || 0;
+      cancelledCount = stats.cancelled || 0;
+    }
     completedCountDisplay.textContent = completedCount;
     breaksCountDisplay.textContent = breaksCount;
     cancelledCountDisplay.textContent = cancelledCount;
