@@ -1,0 +1,130 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, sans-serif;
+  background-color: #f5f0e8;
+  color: #5c5347;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #e8e0d5;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #d5cdc0;
+}
+
+.navbar h1 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #6b5b4f;
+}
+
+/* Main */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* Timer Section */
+.timer-section {
+  text-align: center;
+  padding: 3rem 4rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+[data-testid="phase-display"] {
+  font-size: 2rem;
+  color: #8b7355;
+  margin-bottom: 1rem;
+}
+
+[data-testid="timer-display"] {
+  font-size: 8rem;
+  font-weight: 300;
+  color: #4a4035;
+  margin-bottom: 1.5rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #b8a898;
+  color: #fff;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #a09080;
+}
+
+[data-testid="cancel-button"] {
+  background-color: #c9a9a0;
+}
+
+[data-testid="cancel-button"]:hover {
+  background-color: #b89890;
+}
+
+/* Stats Section */
+.stats-section {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1.5rem 2rem;
+  background-color: #ebe6de;
+  border-radius: 8px;
+}
+
+.date-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date-nav button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+  background-color: #d5cdc0;
+}
+
+.date-nav button:hover {
+  background-color: #c5bdb0;
+}
+
+.date-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stat-item {
+  display: flex;
+  gap: 0.5rem;
+  color: #7a6b5a;
+}
+
+.hidden {
+  display: none;
+}
