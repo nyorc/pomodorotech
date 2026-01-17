@@ -13,11 +13,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Pomodoro Technique 標準規則：每 4 個工作週期後進入長休息
   const POMODOROS_UNTIL_LONG_BREAK = 4;
 
+  function toDateString(date) {
+    return date.toISOString().split('T')[0];
+  }
+
   const startButton = document.querySelector('[data-testid="start-button"]');
   const cancelButton = document.querySelector('[data-testid="cancel-button"]');
   const timerDisplay = document.querySelector('[data-testid="timer-display"]');
   const phaseDisplay = document.querySelector('[data-testid="phase-display"]');
   const completedCountDisplay = document.querySelector('[data-testid="completed-count"]');
+  const breaksCountDisplay = document.querySelector('[data-testid="breaks-count"]');
   const cancelledCountDisplay = document.querySelector('[data-testid="cancelled-count"]');
   const statsDateDisplay = document.querySelector('[data-testid="stats-date"]');
   const prevDayButton = document.querySelector('[data-testid="prev-day-button"]');
@@ -26,26 +31,60 @@ document.addEventListener('DOMContentLoaded', () => {
   let remainingSeconds = POMODORO_DURATION;
   let timerId = null;
   let currentPhase = 'work';
-  let viewingDate = new Date().toISOString().split('T')[0];
+  let viewingDate = toDateString(new Date());
   let completedCount = 0;
+  let breaksCount = 0;
   let cancelledCount = 0;
 
   function updateNavButtons() {
-    const today = new Date().toISOString().split('T')[0];
+    const today = toDateString(new Date());
     nextDayButton.disabled = viewingDate >= today;
   }
 
   function loadStatsForDate(dateStr) {
-    const stats = JSON.parse(localStorage.getItem(`stats-${dateStr}`)) || { completed: 0, cancelled: 0 };
+    const stats = JSON.parse(localStorage.getItem(`stats-${dateStr}`)) || { completed: 0, breaks: 0, cancelled: 0 };
     completedCount = stats.completed;
+    breaksCount = stats.breaks || 0;
     cancelledCount = stats.cancelled;
     completedCountDisplay.textContent = completedCount;
+    breaksCountDisplay.textContent = breaksCount;
     cancelledCountDisplay.textContent = cancelledCount;
     statsDateDisplay.textContent = dateStr;
     updateNavButtons();
   }
 
   loadStatsForDate(viewingDate);
+
+  function updateWeeklyChart() {
+    const today = new Date();
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const counts = [];
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (6 - i));
+      const dateStr = toDateString(d);
+      const stats = JSON.parse(localStorage.getItem(`stats-${dateStr}`)) || { completed: 0 };
+      counts.push(stats.completed);
+      days.push(weekdays[d.getDay()]);
+    }
+    const maxCount = Math.max(...counts, 1);
+    const maxHeight = 100;
+    for (let i = 0; i < 7; i++) {
+      const bar = document.querySelector(`[data-testid="chart-bar-${i}"]`);
+      const label = document.querySelector(`[data-testid="chart-label-${i}"]`);
+      if (bar) {
+        bar.setAttribute('data-value', counts[i].toString());
+        const height = Math.round((counts[i] / maxCount) * maxHeight);
+        bar.style.height = height > 0 ? `${height}px` : '4px';
+      }
+      if (label) {
+        label.textContent = days[i];
+      }
+    }
+  }
+
+  updateWeeklyChart();
 
   function formatTime(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60);
@@ -58,9 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function saveDailyStat(type, recordType) {
-    const todayDate = new Date().toISOString().split('T')[0];
+    const todayDate = toDateString(new Date());
     const statsKey = `stats-${todayDate}`;
-    const stats = JSON.parse(localStorage.getItem(statsKey)) || { completed: 0, cancelled: 0, records: [] };
+    const stats = JSON.parse(localStorage.getItem(statsKey)) || { completed: 0, breaks: 0, cancelled: 0, records: [] };
     stats[type]++;
     if (!stats.records) stats.records = [];
     stats.records.push({ type: recordType, timestamp: new Date().toISOString() });
@@ -70,8 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
   function navigateDate(offset) {
     const date = new Date(viewingDate);
     date.setDate(date.getDate() + offset);
-    viewingDate = date.toISOString().split('T')[0];
+    viewingDate = toDateString(date);
     loadStatsForDate(viewingDate);
+  }
+
+  function setTimerRunning(isRunning) {
+    startButton.classList.toggle('hidden', isRunning);
+    cancelButton.classList.toggle('hidden', !isRunning);
+  }
+
+  function notifyUser(message) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('PomodoroTech', { body: message });
+    }
+    playNotificationSound();
   }
 
   function playNotificationSound() {
@@ -92,8 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   nextDayButton.addEventListener('click', () => navigateDate(1));
 
   startButton.addEventListener('click', () => {
-    cancelButton.classList.remove('hidden');
-    startButton.classList.add('hidden');
+    setTimerRunning(true);
 
     timerId = setInterval(() => {
       remainingSeconds--;
@@ -118,18 +168,16 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } else if (currentPhase === 'shortBreak' || currentPhase === 'longBreak') {
           notificationMessage = 'Break is over! Time to work.';
-          saveDailyStat('completed', currentPhase);
+          breaksCount++;
+          breaksCountDisplay.textContent = breaksCount;
+          saveDailyStat('breaks', currentPhase);
           currentPhase = 'work';
           phaseDisplay.textContent = 'Work';
           remainingSeconds = POMODORO_DURATION;
         }
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('PomodoroTech', { body: notificationMessage });
-        }
-        playNotificationSound();
+        notifyUser(notificationMessage);
         updateDisplay();
-        startButton.classList.remove('hidden');
-        cancelButton.classList.add('hidden');
+        setTimerRunning(false);
       }
     }, 1000);
   });
@@ -141,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelledCount++;
     cancelledCountDisplay.textContent = cancelledCount;
     saveDailyStat('cancelled', 'cancelled');
-    startButton.classList.remove('hidden');
-    cancelButton.classList.add('hidden');
+    setTimerRunning(false);
   });
 });

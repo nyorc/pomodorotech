@@ -128,3 +128,48 @@ button:hover {
 .hidden {
   display: none;
 }
+
+/* Weekly Chart */
+.chart-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background-color: #ebe6de;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.chart-section h3 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b5b4f;
+  margin-bottom: 1rem;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 120px;
+}
+
+.chart-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chart-bar {
+  width: 30px;
+  min-height: 4px;
+  background-color: #b8a898;
+  border-radius: 4px 4px 0 0;
+}
+
+.chart-label {
+  font-size: 0.75rem;
+  color: #7a6b5a;
+  margin-top: 0.25rem;
+}

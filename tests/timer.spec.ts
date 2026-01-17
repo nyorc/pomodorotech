@@ -196,6 +196,27 @@ test.describe('PomodoroTech', () => {
   });
 
   test.describe('Daily Statistics', () => {
+    // 統計區應顯示休息次數標籤和計數，讓用戶了解休息頻率
+    test('should display breaks counter label and count', async ({ page }) => {
+      await page.goto('/');
+
+      await expect(page.getByTestId('breaks-label')).toHaveText('Breaks');
+      await expect(page.getByTestId('breaks-count')).toHaveText('0');
+    });
+
+    // 完成短休息後，休息計數應增加
+    test('should increment breaks count after short break completion', async ({ page }) => {
+      await page.goto('/?testMode=true');
+
+      // 完成工作 -> 進入短休息 -> 完成短休息
+      await page.getByTestId('start-button').click();
+      await page.waitForTimeout(3000);
+      await page.getByTestId('start-button').click();
+      await page.waitForTimeout(3000);
+
+      await expect(page.getByTestId('breaks-count')).toHaveText('1');
+    });
+
     // 統計區應顯示當前查看的日期，預設為今天
     test('should display today date in stats section', async ({ page }) => {
       await page.goto('/');
@@ -333,6 +354,98 @@ test.describe('PomodoroTech', () => {
 
       expect(stats.records.length).toBe(2);
       expect(stats.records[1].type).toBe('shortBreak');
+    });
+  });
+
+  test.describe('Weekly Chart', () => {
+    // 統計區下方應顯示七天長條圖容器
+    test('should display weekly chart with 7 bars', async ({ page }) => {
+      await page.goto('/');
+
+      const chart = page.getByTestId('weekly-chart');
+      await expect(chart).toBeVisible();
+
+      const bars = page.locator('[data-testid="weekly-chart"] [data-testid^="chart-bar-"]');
+      await expect(bars).toHaveCount(7);
+    });
+
+    // 長條圖應根據歷史資料顯示對應高度
+    test('should display bar heights based on completed counts', async ({ page }) => {
+      const today = new Date();
+      const dates: string[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        dates.push(d.toISOString().split('T')[0]);
+      }
+
+      await page.goto('/');
+      // 設定測試資料：最近 7 天完成次數分別為 2, 0, 4, 1, 0, 3, 5
+      const testData = [2, 0, 4, 1, 0, 3, 5];
+      await page.evaluate(({ dates, testData }) => {
+        dates.forEach((date, i) => {
+          if (testData[i] > 0) {
+            localStorage.setItem(`stats-${date}`, JSON.stringify({ completed: testData[i], breaks: 0, cancelled: 0 }));
+          }
+        });
+      }, { dates, testData });
+
+      await page.reload();
+
+      // 驗證今天（最右邊）的長條有對應的 data-value
+      const todayBar = page.getByTestId('chart-bar-6');
+      await expect(todayBar).toHaveAttribute('data-value', '5');
+    });
+
+    // 長條圖應有標題讓用戶了解圖表用途
+    test('should display chart title', async ({ page }) => {
+      await page.goto('/');
+
+      await expect(page.getByTestId('chart-title')).toHaveText('Weekly Completed');
+    });
+
+    // 每個長條下方應顯示星期幾的標籤
+    test('should display weekday labels under each bar', async ({ page }) => {
+      await page.goto('/');
+
+      const labels = page.locator('[data-testid="weekly-chart"] [data-testid^="chart-label-"]');
+      await expect(labels).toHaveCount(7);
+
+      // 驗證今天（最右邊）的標籤是正確的星期
+      const today = new Date();
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const todayLabel = weekdays[today.getDay()];
+      await expect(page.getByTestId('chart-label-6')).toHaveText(todayLabel);
+    });
+
+    // 長條高度應按比例顯示，最高的長條應有最大高度
+    test('should scale bar heights proportionally', async ({ page }) => {
+      const today = new Date();
+      const dates: string[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        dates.push(d.toISOString().split('T')[0]);
+      }
+
+      await page.goto('/');
+      // 設定：第 3 天 (index 2) 完成 10 次（最多），今天完成 5 次
+      await page.evaluate(({ dates }) => {
+        localStorage.setItem(`stats-${dates[2]}`, JSON.stringify({ completed: 10, breaks: 0, cancelled: 0 }));
+        localStorage.setItem(`stats-${dates[6]}`, JSON.stringify({ completed: 5, breaks: 0, cancelled: 0 }));
+      }, { dates });
+
+      await page.reload();
+
+      // 最高的長條 (10 次) 應該有 100px 高度
+      const maxBar = page.getByTestId('chart-bar-2');
+      const maxBarHeight = await maxBar.evaluate(el => el.style.height);
+      expect(maxBarHeight).toBe('100px');
+
+      // 今天的長條 (5 次) 應該是最高的一半 = 50px
+      const todayBar = page.getByTestId('chart-bar-6');
+      const todayBarHeight = await todayBar.evaluate(el => el.style.height);
+      expect(todayBarHeight).toBe('50px');
     });
   });
 });
