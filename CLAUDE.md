@@ -35,6 +35,31 @@ This is a simple single-page application with no build process:
 - `tests/` - Playwright E2E tests
 - `.github/workflows/` - GitHub Actions for deployment
 
+## UI Design
+
+### 配色系統
+
+使用 CSS 變數統一管理，定義於 `:root`：
+
+- 基底色：大地色系 (米白 #f7f5f2、棕灰 #4a4540)
+- 階段色：Work 暖珊瑚、Short Break 柔和綠、Long Break 淡藍
+- 今日標記：藍色 #5b8fb9 (與階段色區隔)
+
+### 設計原則
+
+1. 專注：計時器為視覺焦點 (7rem)，其他元素低調輔助
+2. 含蓄：階段狀態用 pill 標籤 + 12% 透明度背景，避免突兀邊框
+3. 響應式：固定寬度 480px，搭配 `max-width: calc(100vw - 2rem)`
+4. 一致：數字使用 `tabular-nums` 避免跳動
+
+### 佈局結構
+
+```
+計時器區塊 (純白背景，主角)
+統計區塊 (淺灰背景，兩行式：日期導航 + 統計數據)
+週圖表 (淺灰背景，長條上方顯示數值)
+```
+
 ## Data Structure
 
 localStorage key: `stats-{YYYY-MM-DD}`
