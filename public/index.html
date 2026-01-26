@@ -12,7 +12,7 @@
   </nav>
 
   <main>
-    <section class="timer-section">
+    <section class="timer-section" data-phase="work">
       <div data-testid="phase-display">Work</div>
       <div data-testid="timer-display">25:00</div>
       <div class="button-group">
@@ -27,17 +27,19 @@
         <span data-testid="stats-date"></span>
         <button data-testid="next-day-button">&gt;</button>
       </div>
-      <div class="stat-item">
-        <span data-testid="completed-label">Completed</span>
-        <span data-testid="completed-count">0</span>
-      </div>
-      <div class="stat-item">
-        <span data-testid="breaks-label">Breaks</span>
-        <span data-testid="breaks-count">0</span>
-      </div>
-      <div class="stat-item">
-        <span data-testid="cancelled-label">Cancelled</span>
-        <span data-testid="cancelled-count">0</span>
+      <div class="stats-row">
+        <div class="stat-item">
+          <span data-testid="completed-label">Completed</span>
+          <span data-testid="completed-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span data-testid="breaks-label">Breaks</span>
+          <span data-testid="breaks-count">0</span>
+        </div>
+        <div class="stat-item">
+          <span data-testid="cancelled-label">Cancelled</span>
+          <span data-testid="cancelled-count">0</span>
+        </div>
       </div>
     </section>
 

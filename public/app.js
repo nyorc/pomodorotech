@@ -14,12 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const POMODOROS_UNTIL_LONG_BREAK = 4;
 
   function toDateString(date) {
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   const startButton = document.querySelector('[data-testid="start-button"]');
   const cancelButton = document.querySelector('[data-testid="cancel-button"]');
   const timerDisplay = document.querySelector('[data-testid="timer-display"]');
+  const timerSection = document.querySelector('.timer-section');
   const phaseDisplay = document.querySelector('[data-testid="phase-display"]');
   const completedCountDisplay = document.querySelector('[data-testid="completed-count"]');
   const breaksCountDisplay = document.querySelector('[data-testid="breaks-count"]');
@@ -89,13 +93,16 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < 7; i++) {
       const bar = document.querySelector(`[data-testid="chart-bar-${i}"]`);
       const label = document.querySelector(`[data-testid="chart-label-${i}"]`);
+      const isToday = i === 6;
       if (bar) {
         bar.setAttribute('data-value', counts[i].toString());
+        bar.setAttribute('data-today', isToday.toString());
         const height = Math.round((counts[i] / maxCount) * maxHeight);
         bar.style.height = height > 0 ? `${height}px` : '4px';
       }
       if (label) {
         label.textContent = days[i];
+        label.setAttribute('data-today', isToday.toString());
       }
     }
   }
@@ -132,6 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function setTimerRunning(isRunning) {
     startButton.classList.toggle('hidden', isRunning);
     cancelButton.classList.toggle('hidden', !isRunning);
+  }
+
+  function updatePhaseDisplay(phase) {
+    const phaseNames = { work: 'Work', shortBreak: 'Short Break', longBreak: 'Long Break' };
+    phaseDisplay.textContent = phaseNames[phase];
+    timerSection.setAttribute('data-phase', phase);
   }
 
   function notifyUser(message) {
@@ -173,23 +186,23 @@ document.addEventListener('DOMContentLoaded', () => {
           completedCount++;
           completedCountDisplay.textContent = completedCount;
           saveDailyStat('completed', 'work');
+          updateWeeklyChart();
           if (completedCount % POMODOROS_UNTIL_LONG_BREAK === 0) {
             currentPhase = 'longBreak';
-            phaseDisplay.textContent = 'Long Break';
             remainingSeconds = LONG_BREAK_DURATION;
           } else {
             currentPhase = 'shortBreak';
-            phaseDisplay.textContent = 'Short Break';
             remainingSeconds = SHORT_BREAK_DURATION;
           }
+          updatePhaseDisplay(currentPhase);
         } else if (currentPhase === 'shortBreak' || currentPhase === 'longBreak') {
           notificationMessage = 'Break is over! Time to work.';
           breaksCount++;
           breaksCountDisplay.textContent = breaksCount;
           saveDailyStat('breaks', currentPhase);
           currentPhase = 'work';
-          phaseDisplay.textContent = 'Work';
           remainingSeconds = POMODORO_DURATION;
+          updatePhaseDisplay(currentPhase);
         }
         notifyUser(notificationMessage);
         updateDisplay();

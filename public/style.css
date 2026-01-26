@@ -4,26 +4,40 @@
   box-sizing: border-box;
 }
 
+:root {
+  --color-bg: #f7f5f2;
+  --color-card: #fff;
+  --color-card-alt: #f0ede8;
+  --color-text: #4a4540;
+  --color-text-muted: #8a8580;
+  --color-border: #e5e0da;
+  --color-accent: #a09080;
+  --color-work: #c97b6b;
+  --color-short-break: #7ba38a;
+  --color-long-break: #7a9cb8;
+  --color-today: #5b8fb9;
+}
+
 body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: #f5f0e8;
-  color: #5c5347;
+  background-color: var(--color-bg);
+  color: var(--color-text);
 }
 
 /* Navbar */
 .navbar {
-  background-color: #e8e0d5;
+  background-color: var(--color-card);
   padding: 1rem 2rem;
-  border-bottom: 1px solid #d5cdc0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .navbar h1 {
-  font-size: 1.25rem;
+  font-size: 1.6rem;
   font-weight: 500;
-  color: #6b5b4f;
+  color: var(--color-text);
 }
 
 /* Main */
@@ -33,30 +47,55 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 2rem 1rem;
+  gap: 1rem;
+  --section-width: 480px;
 }
 
 /* Timer Section */
 .timer-section {
   text-align: center;
-  padding: 3rem 4rem;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin-bottom: 2rem;
+  padding: 2.5rem 3rem;
+  background-color: var(--color-card);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  width: var(--section-width);
+  max-width: calc(100vw - 2rem);
 }
 
 [data-testid="phase-display"] {
-  font-size: 2rem;
-  color: #8b7355;
-  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 1.4rem;
+  border-radius: 24px;
+  display: inline-block;
+}
+
+/* Phase Colors - subtle background tint */
+.timer-section[data-phase="work"] [data-testid="phase-display"] {
+  color: var(--color-work);
+  background-color: rgba(201, 123, 107, 0.12);
+}
+
+.timer-section[data-phase="shortBreak"] [data-testid="phase-display"] {
+  color: var(--color-short-break);
+  background-color: rgba(123, 163, 138, 0.12);
+}
+
+.timer-section[data-phase="longBreak"] [data-testid="phase-display"] {
+  color: var(--color-long-break);
+  background-color: rgba(122, 156, 184, 0.12);
 }
 
 [data-testid="timer-display"] {
-  font-size: 8rem;
+  font-size: 7rem;
   font-weight: 300;
-  color: #4a4035;
-  margin-bottom: 1.5rem;
+  color: var(--color-text);
+  margin: 1rem 0 1.5rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .button-group {
@@ -66,36 +105,43 @@ main {
 }
 
 button {
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background-color: #b8a898;
+  background-color: var(--color-accent);
   color: #fff;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
 button:hover {
-  background-color: #a09080;
+  background-color: #908070;
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 [data-testid="cancel-button"] {
-  background-color: #c9a9a0;
+  background-color: var(--color-text-muted);
 }
 
 [data-testid="cancel-button"]:hover {
-  background-color: #b89890;
+  background-color: #7a7570;
 }
 
 /* Stats Section */
 .stats-section {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 2rem;
-  padding: 1.5rem 2rem;
-  background-color: #ebe6de;
-  border-radius: 8px;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--color-card-alt);
+  border-radius: 12px;
+  width: var(--section-width);
+  max-width: calc(100vw - 2rem);
 }
 
 .date-nav {
@@ -104,25 +150,47 @@ button:hover {
   gap: 0.5rem;
 }
 
+.date-nav span {
+  white-space: nowrap;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  min-width: 6.5rem;
+  text-align: center;
+}
+
 .date-nav button {
-  padding: 0.25rem 0.75rem;
-  font-size: 0.9rem;
-  background-color: #d5cdc0;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  background-color: var(--color-border);
+  color: var(--color-text-muted);
 }
 
 .date-nav button:hover {
-  background-color: #c5bdb0;
+  background-color: #d5d0ca;
 }
 
 .date-nav button:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
+}
+
+.stats-row {
+  display: flex;
+  gap: 1.5rem;
 }
 
 .stat-item {
   display: flex;
-  gap: 0.5rem;
-  color: #7a6b5a;
+  align-items: baseline;
+  gap: 0.4rem;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.stat-item [data-testid$="-count"] {
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .hidden {
@@ -134,17 +202,20 @@ button:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem 2rem;
-  background-color: #ebe6de;
-  border-radius: 8px;
-  margin-top: 1rem;
+  padding: 1.25rem 1.5rem;
+  background-color: var(--color-card-alt);
+  border-radius: 12px;
+  width: var(--section-width);
+  max-width: calc(100vw - 2rem);
 }
 
 .chart-section h3 {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
-  color: #6b5b4f;
+  color: var(--color-text-muted);
   margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .chart-bars {
@@ -152,6 +223,7 @@ button:hover {
   align-items: flex-end;
   justify-content: center;
   gap: 0.5rem;
+  width: 100%;
   height: 120px;
 }
 
@@ -162,14 +234,39 @@ button:hover {
 }
 
 .chart-bar {
-  width: 30px;
+  width: 32px;
   min-height: 4px;
-  background-color: #b8a898;
-  border-radius: 4px 4px 0 0;
+  background-color: var(--color-border);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+}
+
+.chart-bar[data-today="true"] {
+  background-color: var(--color-today);
+}
+
+.chart-bar::before {
+  content: attr(data-value);
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.chart-bar[data-today="true"]::before {
+  color: var(--color-today);
 }
 
 .chart-label {
-  font-size: 0.75rem;
-  color: #7a6b5a;
-  margin-top: 0.25rem;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+.chart-label[data-today="true"] {
+  font-weight: 600;
+  color: var(--color-today);
 }

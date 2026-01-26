@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+function toLocalDateString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 test.describe('PomodoroTech', () => {
   test.describe('Initial State', () => {
     test('should display initial timer and counter labels', async ({ page }) => {
@@ -199,7 +206,7 @@ test.describe('PomodoroTech', () => {
     test('should display today date in stats section', async ({ page }) => {
       await page.goto('/');
 
-      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const today = toLocalDateString(new Date());
       await expect(page.getByTestId('stats-date')).toHaveText(today);
     });
 
@@ -210,7 +217,7 @@ test.describe('PomodoroTech', () => {
       await page.getByTestId('start-button').click();
       await page.waitForTimeout(1500);
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString(new Date());
       const stats = await page.evaluate((date) => {
         const data = localStorage.getItem(`stats-${date}`);
         return data ? JSON.parse(data) : null;
@@ -227,7 +234,7 @@ test.describe('PomodoroTech', () => {
       await page.getByTestId('start-button').click();
       await page.getByTestId('cancel-button').click();
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString(new Date());
       const stats = await page.evaluate((date) => {
         const data = localStorage.getItem(`stats-${date}`);
         return data ? JSON.parse(data) : null;
@@ -239,7 +246,7 @@ test.describe('PomodoroTech', () => {
 
     // 頁面載入時應從 records 陣列計算統計值，確保資料一致性
     test('should calculate stats from records array on page load', async ({ page }) => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString(new Date());
 
       await page.goto('/');
       await page.evaluate((date) => {
@@ -265,7 +272,7 @@ test.describe('PomodoroTech', () => {
 
     // 頁面載入時應從當天記錄讀取統計，而非全域累計值
     test('should load today stats on page load', async ({ page }) => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString(new Date());
 
       await page.goto('/');
       await page.evaluate((date) => {
@@ -283,7 +290,7 @@ test.describe('PomodoroTech', () => {
       const today = new Date();
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const yesterdayStr = toLocalDateString(yesterday);
 
       await page.goto('/');
       await page.evaluate((date) => {
@@ -300,7 +307,7 @@ test.describe('PomodoroTech', () => {
     // 點擊「後一天」按鈕後，日期應切換到後一天並顯示該日統計
     test('should navigate to next day and show its stats', async ({ page }) => {
       const today = new Date();
-      const todayStr = today.toISOString().split('T')[0];
+      const todayStr = toLocalDateString(today);
 
       await page.goto('/');
       await page.evaluate((date) => {
@@ -328,7 +335,7 @@ test.describe('PomodoroTech', () => {
       await page.getByTestId('start-button').click();
       await page.waitForTimeout(1500);
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString(new Date());
       const stats = await page.evaluate((date) => {
         const data = localStorage.getItem(`stats-${date}`);
         return data ? JSON.parse(data) : null;
@@ -350,7 +357,7 @@ test.describe('PomodoroTech', () => {
       await page.getByTestId('start-button').click();
       await page.waitForTimeout(1500);
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = toLocalDateString(new Date());
       const stats = await page.evaluate((date) => {
         const data = localStorage.getItem(`stats-${date}`);
         return data ? JSON.parse(data) : null;
@@ -358,6 +365,51 @@ test.describe('PomodoroTech', () => {
 
       expect(stats.records.length).toBe(2);
       expect(stats.records[1].type).toBe('shortBreak');
+    });
+  });
+
+  test.describe('Timezone Handling', () => {
+    // 凌晨完成的番茄鐘應記錄到本地日期，而非 UTC 日期
+    // 例如：台灣時間 01/26 03:00 (UTC 01/25 19:00) 應記錄到 01/26
+    test('should use local date for stats storage, not UTC date', async ({ page }) => {
+      // 模擬本地時間凌晨 3:00（UTC 時間會是前一天）
+      const localMidnight = new Date();
+      localMidnight.setHours(3, 0, 0, 0);
+      const localDateStr = `${localMidnight.getFullYear()}-${String(localMidnight.getMonth() + 1).padStart(2, '0')}-${String(localMidnight.getDate()).padStart(2, '0')}`;
+
+      await page.addInitScript((fakeTime) => {
+        const OriginalDate = Date;
+        const mockDate = new OriginalDate(fakeTime);
+
+        class MockDate extends OriginalDate {
+          constructor(...args: any[]) {
+            if (args.length === 0) {
+              super(mockDate.getTime());
+            } else {
+              // @ts-ignore
+              super(...args);
+            }
+          }
+          static now() {
+            return mockDate.getTime();
+          }
+        }
+        // @ts-ignore
+        window.Date = MockDate;
+      }, localMidnight.getTime());
+
+      await page.goto('/?testMode=true');
+      await page.getByTestId('start-button').click();
+      await page.waitForTimeout(1500);
+
+      // 驗證資料儲存在本地日期的 key 下
+      const stats = await page.evaluate((dateStr) => {
+        const data = localStorage.getItem(`stats-${dateStr}`);
+        return data ? JSON.parse(data) : null;
+      }, localDateStr);
+
+      expect(stats).not.toBeNull();
+      expect(stats.completed).toBe(1);
     });
   });
 
@@ -380,7 +432,7 @@ test.describe('PomodoroTech', () => {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
+        dates.push(toLocalDateString(d));
       }
 
       await page.goto('/');
@@ -429,7 +481,7 @@ test.describe('PomodoroTech', () => {
       for (let i = 6; i >= 0; i--) {
         const d = new Date(today);
         d.setDate(d.getDate() - i);
-        dates.push(d.toISOString().split('T')[0]);
+        dates.push(toLocalDateString(d));
       }
 
       await page.goto('/');
@@ -450,6 +502,22 @@ test.describe('PomodoroTech', () => {
       const todayBar = page.getByTestId('chart-bar-6');
       const todayBarHeight = await todayBar.evaluate(el => el.style.height);
       expect(todayBarHeight).toBe('50px');
+    });
+
+    // 工作完成時圖表應即時更新，無需重新載入頁面
+    test('should update chart immediately when work session completes', async ({ page }) => {
+      await page.goto('/?testMode=true');
+
+      // 初始狀態：今天的長條 data-value 應為 0
+      const todayBar = page.getByTestId('chart-bar-6');
+      await expect(todayBar).toHaveAttribute('data-value', '0');
+
+      // 完成一個工作週期
+      await page.getByTestId('start-button').click();
+      await page.waitForTimeout(1500);
+
+      // 圖表應即時更新為 1
+      await expect(todayBar).toHaveAttribute('data-value', '1');
     });
   });
 });
