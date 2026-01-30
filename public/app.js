@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const statsDateDisplay = document.querySelector('[data-testid="stats-date"]');
   const prevDayButton = document.querySelector('[data-testid="prev-day-button"]');
   const nextDayButton = document.querySelector('[data-testid="next-day-button"]');
+  const infoButton = document.querySelector('[data-testid="info-button"]');
+  const infoModal = document.querySelector('[data-testid="info-modal"]');
+  const modalCloseButton = document.querySelector('[data-testid="modal-close-button"]');
 
   let remainingSeconds = POMODORO_DURATION;
   let timerId = null;
@@ -171,42 +174,60 @@ document.addEventListener('DOMContentLoaded', () => {
   prevDayButton.addEventListener('click', () => navigateDate(-1));
   nextDayButton.addEventListener('click', () => navigateDate(1));
 
+  // Info Modal
+  function openModal() {
+    infoModal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    infoModal.classList.add('hidden');
+  }
+
+  infoButton.addEventListener('click', openModal);
+  modalCloseButton.addEventListener('click', closeModal);
+  infoModal.addEventListener('click', (e) => {
+    if (e.target === infoModal) closeModal();
+  });
+
+  // 計時完成時的處理邏輯
+  function handleTimerComplete() {
+    let notificationMessage = '';
+    if (currentPhase === 'work') {
+      notificationMessage = 'Work session completed! Time for a break.';
+      completedCount++;
+      completedCountDisplay.textContent = completedCount;
+      saveDailyStat('completed', 'work');
+      updateWeeklyChart();
+      if (completedCount % POMODOROS_UNTIL_LONG_BREAK === 0) {
+        currentPhase = 'longBreak';
+        remainingSeconds = LONG_BREAK_DURATION;
+      } else {
+        currentPhase = 'shortBreak';
+        remainingSeconds = SHORT_BREAK_DURATION;
+      }
+    } else {
+      notificationMessage = 'Break is over! Time to work.';
+      breaksCount++;
+      breaksCountDisplay.textContent = breaksCount;
+      saveDailyStat('breaks', currentPhase);
+      currentPhase = 'work';
+      remainingSeconds = POMODORO_DURATION;
+    }
+    updatePhaseDisplay(currentPhase);
+    notifyUser(notificationMessage);
+    updateDisplay();
+    setTimerRunning(false);
+  }
+
   startButton.addEventListener('click', () => {
     setTimerRunning(true);
-
     timerId = setInterval(() => {
       remainingSeconds--;
       updateDisplay();
       if (remainingSeconds <= 0) {
         clearInterval(timerId);
         timerId = null;
-        let notificationMessage = '';
-        if (currentPhase === 'work') {
-          notificationMessage = 'Work session completed! Time for a break.';
-          completedCount++;
-          completedCountDisplay.textContent = completedCount;
-          saveDailyStat('completed', 'work');
-          updateWeeklyChart();
-          if (completedCount % POMODOROS_UNTIL_LONG_BREAK === 0) {
-            currentPhase = 'longBreak';
-            remainingSeconds = LONG_BREAK_DURATION;
-          } else {
-            currentPhase = 'shortBreak';
-            remainingSeconds = SHORT_BREAK_DURATION;
-          }
-          updatePhaseDisplay(currentPhase);
-        } else if (currentPhase === 'shortBreak' || currentPhase === 'longBreak') {
-          notificationMessage = 'Break is over! Time to work.';
-          breaksCount++;
-          breaksCountDisplay.textContent = breaksCount;
-          saveDailyStat('breaks', currentPhase);
-          currentPhase = 'work';
-          remainingSeconds = POMODORO_DURATION;
-          updatePhaseDisplay(currentPhase);
-        }
-        notifyUser(notificationMessage);
-        updateDisplay();
-        setTimerRunning(false);
+        handleTimerComplete();
       }
     }, 1000);
   });

@@ -9,7 +9,23 @@
 <body>
   <nav class="navbar">
     <h1>PomodoroTech</h1>
+    <button data-testid="info-button" class="info-button">?</button>
   </nav>
+
+  <div data-testid="info-modal" class="modal hidden">
+    <div class="modal-content">
+      <button data-testid="modal-close-button" class="modal-close">&times;</button>
+      <h2>為什麼用番茄鐘？</h2>
+      <p>我們常被時間追著跑，番茄鐘讓你反過來掌握它。每個番茄是一段不可分割的專注時光，完成它本身就是成就。而休息不是偷懶，是為下一個番茄充電。</p>
+      <h2>怎麼使用？</h2>
+      <ul>
+        <li>專注工作 25 分鐘，中途不可中斷</li>
+        <li>短休息 5 分鐘，離開螢幕放鬆</li>
+        <li>每完成 4 個番茄，長休息 15 分鐘</li>
+        <li>被打斷的番茄不算數，重新開始</li>
+      </ul>
+    </div>
+  </div>
 
   <main>
     <section class="timer-section" data-phase="work">

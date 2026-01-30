@@ -6,6 +6,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PomodoroTech - A simple Pomodoro timer web application with daily statistics tracking. Built with vanilla HTML, CSS, and JavaScript (no frameworks or build tools).
 
+## 番茄鐘核心價值
+
+本專案的功能設計應體現以下核心價值：
+
+### 1. 重新定義與時間的關係
+- 傳統觀念：時間控制我們，帶來壓力與焦慮
+- 番茄鐘：我們成為時間的夥伴，而非受害者
+- 從「被時間追著跑」變成「主動運用時間」
+
+### 2. 培養時間意識
+- 多數人從未追蹤自己的時間，導致大量浪費
+- 透過記錄，發現實際耗時與預期的落差
+- 目標不是完成番茄，而是覺察自己心智發生了什麼
+
+### 3. 休息是最重要的元素
+- 休息讓你在下一個番茄開始時更清晰、更有意願工作
+- 打破「一直工作才有生產力」的迷思
+
+### 4. 保護專注力
+- 番茄不可分割：沒有半個番茄，被打斷就作廢
+- 訓練拒絕干擾的能力
+- 完成一個不被打斷的番茄，本身就是成就
+
+### 5. 低科技哲學
+- 簡單的工具，專注的體驗
+- 減少不必要的功能干擾
+
 ## Tech Stack
 
 - HTML
