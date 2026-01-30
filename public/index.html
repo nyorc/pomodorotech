@@ -28,12 +28,20 @@
   </div>
 
   <main>
+    <div data-testid="phase-hint" class="phase-hint">深呼吸，準備開始</div>
+
     <section class="timer-section" data-phase="work">
-      <div data-testid="phase-display">Work</div>
-      <div data-testid="timer-display">25:00</div>
-      <div class="button-group">
-        <button data-testid="start-button">Start</button>
-        <button data-testid="cancel-button" class="hidden">Cancel</button>
+      <svg data-testid="progress-ring" class="progress-ring" viewBox="0 0 200 200">
+        <circle class="progress-ring-bg" cx="100" cy="100" r="96" />
+        <circle class="progress-ring-fill" cx="100" cy="100" r="96" />
+      </svg>
+      <div class="timer-content">
+        <div data-testid="phase-display">Work</div>
+        <div data-testid="timer-display">25:00</div>
+        <div class="button-group">
+          <button data-testid="start-button">Start</button>
+          <button data-testid="cancel-button" class="hidden">Cancel</button>
+        </div>
       </div>
     </section>
 

@@ -34,8 +34,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const infoButton = document.querySelector('[data-testid="info-button"]');
   const infoModal = document.querySelector('[data-testid="info-modal"]');
   const modalCloseButton = document.querySelector('[data-testid="modal-close-button"]');
+  const progressRingFill = document.querySelector('.progress-ring-fill');
+  const phaseHint = document.querySelector('[data-testid="phase-hint"]');
+
+  const PHASE_HINTS = {
+    work: '深呼吸，準備開始',
+    shortBreak: '喝口水，動一動吧',
+    longBreak: '辛苦了，好好放鬆'
+  };
+
+  const RUNNING_HINTS = {
+    work: '你正在專注',
+    shortBreak: '享受這段休息',
+    longBreak: '什麼都不用想'
+  };
+
+  // 環形進度條的周長 (2 * PI * r，r=96)
+  const RING_CIRCUMFERENCE = 2 * Math.PI * 96;
 
   let remainingSeconds = POMODORO_DURATION;
+  let totalSeconds = POMODORO_DURATION;
   let timerId = null;
   let currentPhase = 'work';
   let viewingDate = toDateString(new Date());
@@ -111,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   updateWeeklyChart();
+  updateProgressRing();
 
   function formatTime(totalSeconds) {
     const minutes = Math.floor(totalSeconds / 60);
@@ -120,6 +139,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateDisplay() {
     timerDisplay.textContent = formatTime(remainingSeconds);
+  }
+
+  function updateProgressRing() {
+    const progress = remainingSeconds / totalSeconds;
+    const offset = RING_CIRCUMFERENCE * (1 - progress);
+    progressRingFill.style.strokeDasharray = RING_CIRCUMFERENCE;
+    progressRingFill.style.strokeDashoffset = offset;
   }
 
   function saveDailyStat(type, recordType) {
@@ -148,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const phaseNames = { work: 'Work', shortBreak: 'Short Break', longBreak: 'Long Break' };
     phaseDisplay.textContent = phaseNames[phase];
     timerSection.setAttribute('data-phase', phase);
+    phaseHint.textContent = PHASE_HINTS[phase];
   }
 
   function notifyUser(message) {
@@ -192,7 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // 計時完成時的處理邏輯
   function handleTimerComplete() {
     let notificationMessage = '';
-    if (currentPhase === 'work') {
+    const isWorkComplete = currentPhase === 'work';
+    if (isWorkComplete) {
       notificationMessage = 'Work session completed! Time for a break.';
       completedCount++;
       completedCountDisplay.textContent = completedCount;
@@ -201,9 +229,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (completedCount % POMODOROS_UNTIL_LONG_BREAK === 0) {
         currentPhase = 'longBreak';
         remainingSeconds = LONG_BREAK_DURATION;
+        totalSeconds = LONG_BREAK_DURATION;
       } else {
         currentPhase = 'shortBreak';
         remainingSeconds = SHORT_BREAK_DURATION;
+        totalSeconds = SHORT_BREAK_DURATION;
       }
     } else {
       notificationMessage = 'Break is over! Time to work.';
@@ -212,6 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveDailyStat('breaks', currentPhase);
       currentPhase = 'work';
       remainingSeconds = POMODORO_DURATION;
+      totalSeconds = POMODORO_DURATION;
     }
     updatePhaseDisplay(currentPhase);
     notifyUser(notificationMessage);
@@ -219,23 +250,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimerRunning(false);
   }
 
-  startButton.addEventListener('click', () => {
+  function startTimer() {
     setTimerRunning(true);
+    phaseHint.textContent = RUNNING_HINTS[currentPhase];
     timerId = setInterval(() => {
       remainingSeconds--;
       updateDisplay();
+      updateProgressRing();
       if (remainingSeconds <= 0) {
         clearInterval(timerId);
         timerId = null;
         handleTimerComplete();
       }
     }, 1000);
-  });
+  }
+
+  startButton.addEventListener('click', startTimer);
 
   cancelButton.addEventListener('click', () => {
     clearInterval(timerId);
+    timerId = null;
+    currentPhase = 'work';
     remainingSeconds = POMODORO_DURATION;
+    totalSeconds = POMODORO_DURATION;
+    updatePhaseDisplay(currentPhase);
     updateDisplay();
+    updateProgressRing();
     cancelledCount++;
     cancelledCountDisplay.textContent = cancelledCount;
     saveDailyStat('cancelled', 'cancelled');

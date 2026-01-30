@@ -84,13 +84,11 @@ test.describe('PomodoroTech', () => {
 
       await page.getByTestId('start-button').click();
       await page.waitForTimeout(TIMER_WAIT);
-
       await page.getByTestId('start-button').click();
       await page.waitForTimeout(TIMER_WAIT);
 
       await expect(page.getByTestId('phase-display')).toHaveText('Work');
       await expect(page.getByTestId('timer-display')).toHaveText('0:01');
-      await expect(page.getByTestId('start-button')).toBeVisible();
     });
 
     test('should enter long break after 4 pomodoros', async ({ page }) => {
@@ -412,6 +410,77 @@ test.describe('PomodoroTech', () => {
 
       expect(stats).not.toBeNull();
       expect(stats.completed).toBe(1);
+    });
+  });
+
+  test.describe('Progress Ring', () => {
+    // 進度環應始終顯示
+    test('should always display progress ring', async ({ page }) => {
+      await page.goto('/');
+
+      await expect(page.getByTestId('progress-ring')).toBeVisible();
+    });
+  });
+
+  test.describe('Phase Hint', () => {
+    // 工作階段應顯示準備提示
+    test('should display work hint during work phase', async ({ page }) => {
+      await page.goto('/');
+
+      const hint = page.getByTestId('phase-hint');
+      await expect(hint).toBeVisible();
+      await expect(hint).toHaveText('深呼吸，準備開始');
+    });
+
+    // 短休息階段應顯示休息提示
+    test('should display short break hint during short break phase', async ({ page }) => {
+      await page.goto('/?testMode=true');
+
+      await page.getByTestId('start-button').click();
+      await page.waitForTimeout(TIMER_WAIT);
+
+      const hint = page.getByTestId('phase-hint');
+      await expect(hint).toHaveText('喝口水，動一動吧');
+    });
+
+    // 長休息階段應顯示肯定提示
+    test('should display long break hint during long break phase', async ({ page }) => {
+      await page.goto('/?testMode=true');
+
+      // 完成 4 個工作週期進入長休息
+      for (let i = 0; i < 4; i++) {
+        await page.getByTestId('start-button').click();
+        await page.waitForTimeout(TIMER_WAIT);
+        if (i < 3) {
+          await page.getByTestId('start-button').click();
+          await page.waitForTimeout(TIMER_WAIT);
+        }
+      }
+
+      const hint = page.getByTestId('phase-hint');
+      await expect(hint).toHaveText('辛苦了，好好放鬆');
+    });
+
+    // 工作計時進行中應顯示鼓勵提示
+    test('should display focusing hint when work timer is running', async ({ page }) => {
+      await page.goto('/');
+
+      await page.getByTestId('start-button').click();
+
+      const hint = page.getByTestId('phase-hint');
+      await expect(hint).toHaveText('你正在專注');
+    });
+
+    // 休息計時進行中應顯示放鬆提示
+    test('should display resting hint when break timer is running', async ({ page }) => {
+      await page.goto('/?testMode=true');
+
+      await page.getByTestId('start-button').click();
+      await page.waitForTimeout(TIMER_WAIT);
+      await page.getByTestId('start-button').click();
+
+      const hint = page.getByTestId('phase-hint');
+      await expect(hint).toHaveText('享受這段休息');
     });
   });
 

@@ -157,8 +157,9 @@ main {
 
 /* Timer Section */
 .timer-section {
+  position: relative;
   text-align: center;
-  padding: 2.5rem 3rem;
+  padding: 4rem 3rem;
   background-color: var(--color-card);
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
@@ -166,13 +167,64 @@ main {
   max-width: calc(100vw - 2rem);
 }
 
+/* Phase Hint */
+.phase-hint {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.75rem;
+  width: var(--section-width);
+  max-width: calc(100vw - 2rem);
+}
+
+.timer-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Progress Ring */
+.progress-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  height: 360px;
+  z-index: 0;
+}
+
+.progress-ring-bg {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 6;
+}
+
+.progress-ring-fill {
+  fill: none;
+  stroke: var(--color-work);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.timer-section[data-phase="shortBreak"] .progress-ring-fill {
+  stroke: var(--color-short-break);
+}
+
+.timer-section[data-phase="longBreak"] .progress-ring-fill {
+  stroke: var(--color-long-break);
+}
+
 [data-testid="phase-display"] {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
-  padding: 0.5rem 1.4rem;
+  padding: 0.5rem 1.3rem;
   border-radius: 24px;
   display: inline-block;
 }
@@ -194,10 +246,10 @@ main {
 }
 
 [data-testid="timer-display"] {
-  font-size: 7rem;
+  font-size: 6.5rem;
   font-weight: 300;
   color: var(--color-text);
-  margin: 1rem 0 1.5rem;
+  margin: 0.75rem 0 1.25rem;
   font-variant-numeric: tabular-nums;
 }
 
