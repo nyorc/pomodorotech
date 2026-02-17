@@ -18,6 +18,33 @@
   --color-today: #5b8fb9;
 }
 
+[data-theme="dark"] {
+  --color-bg: #1a1917;
+  --color-card: #262421;
+  --color-card-alt: #2e2b28;
+  --color-text: #e8e4df;
+  --color-text-muted: #9a9590;
+  --color-border: #3a3735;
+  --color-accent: #b0a090;
+}
+
+/* 深色模式下覆寫硬編碼的 hover 背景色 */
+[data-theme="dark"] .info-button:hover {
+  background-color: #4a4745;
+}
+
+[data-theme="dark"] .theme-toggle-button:hover {
+  background-color: #4a4745;
+}
+
+[data-theme="dark"] button:hover {
+  background-color: #a09080;
+}
+
+[data-theme="dark"] .date-nav button:hover {
+  background-color: #4a4745;
+}
+
 body {
   min-height: 100vh;
   display: flex;
@@ -55,6 +82,21 @@ body {
 }
 
 .info-button:hover {
+  background-color: #d5d0ca;
+}
+
+.theme-toggle-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 1rem;
+  border-radius: 50%;
+  background-color: var(--color-border);
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.theme-toggle-button:hover {
   background-color: #d5d0ca;
 }
 

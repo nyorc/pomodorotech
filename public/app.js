@@ -36,6 +36,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalCloseButton = document.querySelector('[data-testid="modal-close-button"]');
   const progressRingFill = document.querySelector('.progress-ring-fill');
   const phaseHint = document.querySelector('[data-testid="phase-hint"]');
+  const themeToggleButton = document.querySelector('[data-testid="theme-toggle-button"]');
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggleButton.textContent = theme === 'dark' ? '☀' : '☽';
+  }
+
+  setTheme(localStorage.getItem('theme') || 'light');
+
+  themeToggleButton.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', next);
+    setTheme(next);
+  });
 
   const PHASE_HINTS = {
     work: '深呼吸，準備開始',

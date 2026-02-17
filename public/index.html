@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PomodoroTech</title>
+  <script>document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');</script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav class="navbar">
     <h1>PomodoroTech</h1>
     <button data-testid="info-button" class="info-button">?</button>
+    <button data-testid="theme-toggle-button" class="theme-toggle-button">☽</button>
   </nav>
 
   <div data-testid="info-modal" class="modal hidden">

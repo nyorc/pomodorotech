@@ -630,4 +630,88 @@ test.describe('PomodoroTech', () => {
       await expect(todayBar).toHaveAttribute('data-value', '1');
     });
   });
+
+  test.describe('Theme Toggle', () => {
+    test('should display theme toggle button in navbar', async ({ page }) => {
+      await page.goto('/');
+
+      const toggleButton = page.getByTestId('theme-toggle-button');
+      await expect(toggleButton).toBeVisible();
+    });
+
+    test('should toggle to dark theme when clicked', async ({ page }) => {
+      await page.goto('/');
+
+      await page.getByTestId('theme-toggle-button').click();
+
+      const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+      expect(theme).toBe('dark');
+    });
+
+    test('should apply dark background color in dark theme', async ({ page }) => {
+      await page.goto('/');
+
+      await page.getByTestId('theme-toggle-button').click();
+
+      const bgColor = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+      // #1a1917 = rgb(26, 25, 23)
+      expect(bgColor).toBe('rgb(26, 25, 23)');
+    });
+
+    test('should persist theme preference across page reload', async ({ page }) => {
+      await page.goto('/');
+
+      await page.getByTestId('theme-toggle-button').click();
+      await page.reload();
+
+      const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+      expect(theme).toBe('dark');
+    });
+
+    test('should toggle back to light theme when clicked again', async ({ page }) => {
+      await page.goto('/');
+
+      await page.getByTestId('theme-toggle-button').click();
+      await page.getByTestId('theme-toggle-button').click();
+
+      const theme = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
+      expect(theme).toBe('light');
+    });
+
+    test('should show sun icon in dark mode and moon icon in light mode', async ({ page }) => {
+      await page.goto('/');
+
+      // 預設淺色：顯示月亮
+      await expect(page.getByTestId('theme-toggle-button')).toHaveText('☽');
+
+      // 切到深色：顯示太陽
+      await page.getByTestId('theme-toggle-button').click();
+      await expect(page.getByTestId('theme-toggle-button')).toHaveText('☀');
+    });
+
+    test('should apply dark hover color for info button in dark mode', async ({ page }) => {
+      await page.goto('/');
+      await page.getByTestId('theme-toggle-button').click();
+
+      // 等待 CSS transition 完成 (background-color 0.2s)
+      await page.waitForTimeout(300);
+
+      // 驗證 info button 在深色模式下使用深色背景
+      const bgColor = await page.evaluate(() => {
+        const btn = document.querySelector('.info-button') as HTMLElement;
+        return getComputedStyle(btn).backgroundColor;
+      });
+      // 深色模式下 border 色為 #3a3735 = rgb(58, 55, 53)
+      expect(bgColor).toBe('rgb(58, 55, 53)');
+    });
+
+    test('should show correct icon after reload in dark mode', async ({ page }) => {
+      await page.goto('/');
+
+      await page.getByTestId('theme-toggle-button').click();
+      await page.reload();
+
+      await expect(page.getByTestId('theme-toggle-button')).toHaveText('☀');
+    });
+  });
 });
