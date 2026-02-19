@@ -66,11 +66,12 @@ This is a simple single-page application with no build process:
 
 ### 配色系統
 
-使用 CSS 變數統一管理，定義於 `:root`：
+使用 CSS 變數統一管理，定義於 `:root`，深色主題透過 `[data-theme="dark"]` 覆蓋：
 
-- 基底色：大地色系 (米白 #f7f5f2、棕灰 #4a4540)
-- 階段色：Work 暖珊瑚、Short Break 柔和綠、Long Break 淡藍
+- 基底色：大地色系 (淺色：米白 #f7f5f2、棕灰 #4a4540；深色：#1a1917、#e8e4df)
+- 階段色：Work 暖珊瑚、Short Break 柔和綠、Long Break 淡藍 (兩主題共用)
 - 今日標記：藍色 #5b8fb9 (與階段色區隔)
+- 主題切換：Navbar 右側按鈕，偏好存 localStorage key `theme`
 
 ### 設計原則
 
@@ -89,7 +90,9 @@ This is a simple single-page application with no build process:
 
 ## Data Structure
 
-localStorage key: `stats-{YYYY-MM-DD}`
+localStorage key `theme`: `"light"` | `"dark"` (預設 `"light"`)
+
+localStorage key `stats-{YYYY-MM-DD}`:
 
 ```json
 {
